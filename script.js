@@ -71,14 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const defaultMusicPath = 'audio/music.mp3';
 
+    // MODIFICATION ICI : Chaque catégorie contient maintenant exactement 5 messages
     const messages = {
         love: [
             "Tu es mon étoile, celle qui guide mes nuits et illumine mes jours. ✨",
             "Dans le jardin de ma vie, tu es la plus belle des fleurs. 🌸",
             "Chaque moment passé avec toi est un trésor que je garde précieusement. 💖",
             "Ton sourire a le pouvoir d'effacer tous mes soucis. 😊",
-            "Être avec toi, c'est comme écouter la plus douce des mélodies. 🎶",
-            "Tu as transformé mon monde en un conte de fées. 🧚‍♀️",
             "Mon amour pour toi est plus vaste que l'océan et plus profond que le ciel. 💙"
         ],
         birthday: [
@@ -105,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         encouragement: [
             "Crois en toi. Tu es plus fort(e) que tu ne le penses. ✨",
             "Chaque défi est une opportunité de grandir. Tiens bon ! 🚀",
-            "N'abandonne jamais. Tes efforts finiront par payer. Persevere 💪",
+            "N'abandonne jamais. Tes efforts finiront par payer. Persévère 💪",
             "Je crois en ton potentiel. Tu as tout ce qu'il faut pour réussir. 🌟",
             "Même les plus petits pas en avant sont des progrès. Continue d'avancer. 🚶‍♂️➡️"
         ]
@@ -144,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Function to display the message to the recipient (MODIFIÉE POUR FIREBASE)
+    // Function to display the message to the recipient (MODIFIÉE POUR FIREBASE ET UN SEUL MESSAGE)
     const displayWish = async (messageId) => {
         try {
             const docSnap = await getDoc(doc(db, "messages", messageId)); // Récupère le document
@@ -165,30 +164,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 wishMessageContainer.innerHTML = '';
 
-                let messagesToDisplay = [];
+                let messageToDisplay = ''; // Variable pour stocker le message unique
 
                 if (messageData.mode === 'custom') {
-                    messagesToDisplay = messageData.customMessage.split('\n').filter(Boolean);
+                    messageToDisplay = messageData.customMessage;
                 } else {
                     const selectedMessageTypeMessages = messages[messageData.type] || messages.love;
-                    messagesToDisplay = messageData.contentIndexes.map(index => selectedMessageTypeMessages[index]);
+                    // MODIFICATION ICI : On récupère directement le message via son index unique
+                    const messageIndex = messageData.contentIndex; // Renommé de contentIndexes à contentIndex
+                    messageToDisplay = selectedMessageTypeMessages[messageIndex];
                 }
 
                 backgroundMusic.src = defaultMusicPath;
                 backgroundMusic.load();
 
-                messagesToDisplay.forEach((msg, i) => {
-                    setTimeout(() => {
-                        const p = document.createElement('p');
-                        p.textContent = msg;
-                        p.classList.add('typing-effect');
-                        wishMessageContainer.appendChild(p);
+                // MODIFICATION ICI : Affichage d'un seul message avec l'effet de frappe
+                const p = document.createElement('p');
+                p.textContent = messageToDisplay;
+                p.classList.add('typing-effect');
+                wishMessageContainer.appendChild(p);
 
-                        p.addEventListener('animationend', () => {
-                            p.classList.remove('typing-effect');
-                        });
-                    }, i * 3000);
+                p.addEventListener('animationend', () => {
+                    p.classList.remove('typing-effect');
                 });
+
 
                 showView('recipient-view');
 
@@ -272,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handles form submission (MODIFIÉE POUR FIREBASE)
+    // Handles form submission (MODIFIÉE POUR FIREBASE ET UN SEUL MESSAGE)
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = nameInput.value.trim();
@@ -298,18 +297,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (messageMode === 'surprise') {
             const selectedMessageType = messageTypeSelect.value;
             const availableMessages = messages[selectedMessageType];
-            if (!availableMessages || availableMessages.length < 3) {
-                alert("Pas assez de messages pour ce thème. Veuillez choisir un autre thème ou écrire votre propre message.");
+            // Modification ICI : On s'assure qu'il y a au moins 5 messages pour choisir un unique index
+            if (!availableMessages || availableMessages.length < 5) {
+                alert("Pas assez de messages pour ce thème (il faut au moins 5 messages). Veuillez choisir un autre thème ou écrire votre propre message.");
                 return;
             }
 
-            const selectedMessageIndexes = new Set();
-            while(selectedMessageIndexes.size < 3) {
-                const randomIndex = Math.floor(Math.random() * availableMessages.length);
-                selectedMessageIndexes.add(randomIndex);
-            }
+            // MODIFICATION ICI : Sélectionne un seul index aléatoire
+            const randomIndex = Math.floor(Math.random() * availableMessages.length);
+            
             messageData.type = selectedMessageType;
-            messageData.contentIndexes = Array.from(selectedMessageIndexes);
+            messageData.contentIndex = randomIndex; // Stocke un seul index
         } else { // custom message
             const customMsg = customMessageTextarea.value.trim();
             if (customMsg === "") {
@@ -440,4 +438,146 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Start the router on load
     handleRouting();
+});
+
+// ... (début de votre script.js existant) ...
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Select DOM elements (AJOUTEZ LES NOUVEAUX ÉLÉMENTS ICI)
+    const creatorView = document.getElementById('creator-view');
+    const linkView = document.getElementById('link-view');
+    const recipientView = document.getElementById('recipient-view');
+
+    const form = document.getElementById('wish-form');
+    const nameInput = document.getElementById('recipient-name');
+    const recipientPhotoInput = document.getElementById('recipient-photo');
+    const photoPreviewText = document.getElementById('photo-preview-text');
+
+    const kwakoSurpriseRadio = document.getElementById('kwako-surprise');
+    const writeOwnRadio = document.getElementById('write-own');
+    const kwakoOptionsGroup = document.getElementById('kwako-options');
+    const customMessageGroup = document.getElementById('custom-message-group');
+    const customMessageTextarea = document.getElementById('custom-message');
+
+    const messageTypeSelect = document.getElementById('message-type');
+    const themeSelect = document.getElementById('theme-select');
+    const generatedLinkInput = document.getElementById('generated-link');
+    const copyButton = document.getElementById('copy-button');
+    const copyFeedback = document.getElementById('copy-feedback');
+
+    // Nouveaux éléments pour les icônes de partage
+    const shareWhatsappButton = document.getElementById('share-whatsapp');
+    const shareFacebookButton = document.getElementById('share-facebook');
+    const shareSmsButton = document.getElementById('share-sms');
+    const shareTwitterButton = document.getElementById('share-twitter');
+    const shareSnapchatButton = document.getElementById('share-snapchat'); // Note: Snapchat est plus complexe à partager directement via URL
+
+    const recipientTitle = document.getElementById('recipient-title');
+    const displayedRecipientPhoto = document.getElementById('displayed-recipient-photo');
+    const recipientPhotoContainer = document.getElementById('recipient-photo-container');
+    const wishMessageContainer = document.getElementById('wish-message');
+
+    const backgroundMusic = document.getElementById('background-music');
+    const toggleMusicButton = document.getElementById('toggle-music-button');
+
+    const downloadMessageButton = document.getElementById('download-message');
+    const createNewMessageRecipientButton = document.getElementById('create-new-message-recipient');
+    const createNewMessageLinkButton = document.getElementById('create-new-message');
+
+    let base64Photo = '';
+
+    const defaultMusicPath = 'audio/music.mp3';
+
+    // Votre tableau de messages (déjà mis à jour avec 5 messages par catégorie)
+    const messages = {
+        love: [
+            "Tu es mon étoile, celle qui guide mes nuits et illumine mes jours. ✨",
+            "Dans le jardin de ma vie, tu es la plus belle des fleurs. 🌸",
+            "Chaque moment passé avec toi est un trésor que je garde précieusement. 💖",
+            "Ton sourire a le pouvoir d'effacer tous mes soucis. 😊",
+            "Mon amour pour toi est plus vaste que l'océan et plus profond que le ciel. 💙"
+        ],
+        birthday: [
+            "Joyeux anniversaire ! Que cette journée t'apporte joie, amour, et de merveilleux souvenirs. 🎂🎉",
+            "Passe un très joyeux anniversaire ! Que tous tes vœux se réalisent. 🎁",
+            "Un an de plus, une sagesse nouvelle, et toujours plus d'éclat. Joyeux anniversaire ! ✨",
+            "Que cette journée spéciale soit remplie de rires, de cadeaux, et de tout ce qui te rend heureux(se). 😂🎁🥳",
+            "Joyeux anniversaire à une personne incroyable ! Célèbre chaque moment. 🥂"
+        ],
+        friendship: [
+            "Merci d'être un(e) ami(e) si précieux(se). Notre amitié est un cadeau. 🫂",
+            "Les meilleurs amis sont rares, et je suis tellement chanceux(se) de t'avoir. 🌟",
+            "À travers les hauts et les bas, tu es toujours là. Merci pour tout. 💪",
+            "L'amitié, c'est un lien invisible qui nous unit. Heureux(se) de partager le mien avec toi. 🤗",
+            "Que notre amitié continue de briller et de nous apporter tant de joie. 😄"
+        ],
+        family: [
+            "La famille est le cœur de tout. Je suis reconnaissant(e) de t'avoir. ❤️🏡",
+            "Dans cette famille, l'amour est notre plus grande force. 💖👨‍👩‍👧‍👦",
+            "Des liens du sang aux liens du cœur, notre famille est unique et précieuse. 👨‍👩‍👧‍👦✨",
+            "Merci pour les rires, le soutien et les souvenirs que nous partageons en famille. 😁🫶",
+            "Tu es une partie essentielle de ma famille, et je t'envoie tout mon amour. 💕"
+        ],
+        encouragement: [
+            "Crois en toi. Tu es plus fort(e) que tu ne le penses. ✨",
+            "Chaque défi est une opportunité de grandir. Tiens bon ! 🚀",
+            "N'abandonne jamais. Tes efforts finiront par payer. Persévère 💪",
+            "Je crois en ton potentiel. Tu as tout ce qu'il faut pour réussir. 🌟",
+            "Même les plus petits pas en avant sont des progrès. Continue d'avancer. 🚶‍♂️➡️"
+        ]
+    };
+
+    // ... (Reste de votre code existant : handleRouting, showView, applyTheme, displayWish, etc.) ...
+
+    // Fonction pour ouvrir une fenêtre de partage
+    const openShareWindow = (url) => {
+        window.open(url, '_blank', 'width=600,height=400');
+    };
+
+    // Écouteurs d'événements pour les boutons de partage
+    if (shareWhatsappButton) {
+        shareWhatsappButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const link = generatedLinkInput.value;
+            const message = `Regarde le message surprise Kwako que je t'ai envoyé ! 🎁\n${link}`;
+            openShareWindow(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`);
+        });
+    }
+
+    if (shareFacebookButton) {
+        shareFacebookButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const link = generatedLinkInput.value;
+            // Utilisez l'URL de partage de Facebook pour les liens
+            openShareWindow(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`);
+        });
+    }
+
+    if (shareSmsButton) {
+        shareSmsButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const link = generatedLinkInput.value;
+            const message = `Voici ton message surprise Kwako ! ${link}`;
+            // Utilise 'sms:' pour Android/iOS. 'body' est pour le message.
+            window.location.href = `sms:?body=${encodeURIComponent(message)}`;
+        });
+    }
+
+    if (shareTwitterButton) { // Renommé pour X/Twitter
+        shareTwitterButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const link = generatedLinkInput.value;
+            const text = `Découvre ton message surprise Kwako ! #KwakoApp`;
+            openShareWindow(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`);
+        });
+    }
+
+    // Pour Snapchat, le partage direct via URL est très limité et ne permet pas d'ouvrir l'appli avec un contenu précis.
+    // L'icône renverra juste vers le site de Snapchat ou l'utilisateur devra copier-coller.
+    // Vous pouvez laisser le href existant vers snapchat.com ou ne pas ajouter de logique spécifique ici.
+    // Si vous souhaitez une interaction plus profonde, cela nécessiterait des SDK spécifiques à Snapchat, qui ne sont pas pour le web standard.
+
+    // ... (Reste de votre code existant : handleRouting, showView, applyTheme, displayWish, etc.
+    // jusqu'à la fin de document.addEventListener('DOMContentLoaded', ...) ) ...
+
 });

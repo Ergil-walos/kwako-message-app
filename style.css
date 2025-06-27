@@ -475,3 +475,105 @@ footer {
         padding: 12px 20px;
     }
 }
+
+/* Styles pour les icônes de partage */
+.share-icons-container {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px; /* Ajoute de l'espace en dessous */
+    padding-top: 20px;
+    border-top: 1px solid rgba(0,0,0,0.1); /* Ligne de séparation légère */
+}
+
+.share-icons-container p {
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: var(--text-color-dark);
+    font-size: 1.1em;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Espacement entre les icônes */
+    flex-wrap: wrap; /* Permet aux icônes de passer à la ligne sur petits écrans */
+}
+
+.social-icon {
+    display: inline-flex; /* Permet de centrer le contenu et de définir width/height */
+    align-items: center;
+    justify-content: center;
+    width: 50px; /* Taille des icônes */
+    height: 50px;
+    border-radius: 50%; /* Rendre les icônes rondes */
+    background-color: #e0e0e0; /* Couleur de fond par défaut */
+    color: white; /* Couleur de l'icône */
+    font-size: 1.8em; /* Taille de l'icône */
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Couleurs spécifiques pour chaque icône */
+.social-icon.whatsapp {
+    background-color: #25D366;
+}
+.social-icon.whatsapp:hover {
+    background-color: #1DA851;
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 15px rgba(37, 211, 102, 0.4);
+}
+
+.social-icon.facebook {
+    background-color: #1877F2;
+}
+.social-icon.facebook:hover {
+    background-color: #145CB7;
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 15px rgba(24, 119, 242, 0.4);
+}
+
+.social-icon.sms {
+    background-color: #007AFF; /* Couleur bleue iOS Messages */
+}
+.social-icon.sms:hover {
+    background-color: #0056B3;
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 122, 255, 0.4);
+}
+
+.social-icon.twitter { /* Maintenant pour X/Twitter */
+    background-color: #000000;
+}
+.social-icon.twitter:hover {
+    background-color: #333333;
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.social-icon.snapchat {
+    background-color: #FFFC00;
+    color: #333; /* Texte noir sur fond jaune */
+}
+.social-icon.snapchat:hover {
+    background-color: #E6E300;
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 15px rgba(255, 252, 0, 0.4);
+}
+
+
+/* ... (votre CSS existant pour Responsive Design) ... */
+
+@media (max-width: 768px) {
+    /* ... (vos styles responsive existants) ... */
+
+    .social-icons {
+        gap: 10px; /* Réduire l'espacement sur mobile */
+    }
+
+    .social-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.6em;
+    }
+}
