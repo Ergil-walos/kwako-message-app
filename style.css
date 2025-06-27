@@ -1,0 +1,477 @@
+:root {
+    --primary-color: #FF6F61; /* Corail doux */
+    --secondary-color: #6B5B95; /* Violet doux */
+    --accent-color: #88B04B; /* Vert olive */
+    --text-color-dark: #2c3e50; /* Gris foncé - TRÈS IMPORTANT : Assurez-vous que cette couleur est bien foncée */
+    --text-color-light: #ecf0f1; /* Gris très clair */
+    --bg-gradient-start: #e0f2f7; /* Bleu très clair */
+    --bg-gradient-end: #c5e1e5; /* Bleu-vert clair */
+    --card-bg: rgba(255, 255, 255, 0.9); /* Blanc légèrement transparent */
+    --card-shadow: rgba(0, 0, 0, 0.15);
+    --button-shadow: rgba(0, 0, 0, 0.2);
+    --glass-blur: 10px;
+    --glass-border: rgba(255, 255, 255, 0.3);
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+    color: var(--text-color-dark);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: background 0.5s ease-in-out;
+}
+
+/* Thèmes améliorés pour un look moderne */
+body.theme-default {
+    background: linear-gradient(135deg, #f0f8ff, #e6e6fa);
+}
+
+body.theme-romantic {
+    background: linear-gradient(135deg, #ffe4e1, #ffc0cb);
+}
+
+body.theme-festive {
+    background: linear-gradient(135deg, #fffacd, #ffd700);
+}
+
+body.theme-nature {
+    background: linear-gradient(135deg, #e0ffe0, #b0e0e6);
+}
+
+body.theme-minimalist {
+    background-color: #f8f8f8;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 25px 0;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+
+header h1 {
+    font-family: 'Pacifico', cursive;
+    margin: 0;
+    font-size: 3.5em;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+header p {
+    margin: 8px 0 0;
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+main {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 30px;
+}
+
+.view {
+    background-color: var(--card-bg);
+    padding: 35px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px var(--card-shadow);
+    width: 100%;
+    max-width: 650px;
+    display: none;
+    animation: fadeIn 0.6s ease-out;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    /* Effet verre dépoli pour les cartes */
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+}
+
+.view.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 30px;
+    font-family: 'Pacifico', cursive;
+    font-size: 2.5em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: var(--text-color-dark);
+    font-size: 1.05em;
+}
+
+input[type="text"],
+input[type="file"]::file-selector-button,
+textarea,
+select {
+    width: calc(100% - 24px);
+    padding: 14px;
+    border: 1px solid #c5d3de;
+    border-radius: 8px;
+    font-size: 1.05em;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    background-color: #fcfdff;
+}
+
+input[type="file"] {
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+select:focus,
+input[type="file"]::file-selector-button:focus {
+    border-color: var(--secondary-color);
+    outline: none;
+    box-shadow: 0 0 8px rgba(107, 91, 149, 0.4);
+    background-color: white;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.radio-group input[type="radio"] {
+    display: none;
+}
+
+.radio-group label {
+    background-color: var(--bg-gradient-start);
+    padding: 12px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid var(--secondary-color);
+    font-weight: normal;
+    margin-bottom: 0;
+    color: var(--secondary-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.radio-group input[type="radio"]:checked + label {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+    box-shadow: 0 4px 10px rgba(107, 91, 149, 0.3);
+    transform: translateY(-2px);
+}
+
+.button {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    margin-top: 25px;
+    box-shadow: 0 4px 10px var(--button-shadow);
+}
+
+.primary-button {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.primary-button:hover {
+    background-color: #ff8a7a;
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+}
+
+.secondary-button {
+    background-color: var(--secondary-color);
+    color: white;
+    margin-top: 15px;
+}
+
+.secondary-button:hover {
+    background-color: #8a7aae;
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+}
+
+.copy-feedback {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: var(--accent-color);
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+}
+
+.copy-feedback.show {
+    opacity: 1;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Styles spécifiques à la vue du destinataire */
+#recipient-title {
+    font-size: 3em;
+    margin-bottom: 35px;
+    /* CORRECTION : Utilise une couleur plus contrastée pour le titre */
+    color: var(--secondary-color); /* Ou une couleur directe comme #333; si --secondary-color est trop clair pour le goût */
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.recipient-photo-container {
+    display: flex; /* S'assure que c'est un conteneur flex lorsqu'il est visible */
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 35px;
+    padding: 20px;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+#displayed-recipient-photo {
+    max-width: 100%;
+    height: auto;
+    max-height: 300px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+#displayed-recipient-photo:hover {
+    transform: scale(1.02);
+}
+
+.wish-message {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 35px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 1.4em;
+    line-height: 1.8;
+    color: #444; /* Cette couleur est pour le conteneur, les paragraphes enfants doivent hériter ou être spécifiés */
+    overflow: hidden;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    position: relative;
+}
+
+.wish-message p {
+    margin: 15px 0;
+    /* CORRECTION : S'assure que le texte est visible et de couleur foncée */
+    opacity: 1; /* Le texte est visible par défaut avant l'animation de frappe */
+    animation-fill-mode: forwards;
+    position: relative;
+    text-shadow: 0 0 5px rgba(255,255,255,0.7);
+    color: var(--text-color-dark); /* Utilise la variable foncée pour le texte des messages */
+    /* Si var(--text-color-dark) ne fonctionne pas pour une raison quelconque, décommentez la ligne ci-dessous: */
+    /* color: #333; */
+}
+
+/* Effet de frappe amélioré */
+.typing-effect {
+    white-space: pre-wrap; /* Permet au texte de passer à la ligne naturellement */
+    overflow: hidden;
+    border-right: .15em solid var(--primary-color);
+    /* Ajustement de la durée de l'animation pour un défilement plus fluide et plus lent */
+    animation: typing 3s steps(40, end), blink-caret .75s step-end infinite;
+    max-width: 100%;
+}
+
+/* L'animation de frappe */
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+
+/* L'effet de curseur de machine à écrire */
+@keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: var(--primary-color); }
+}
+
+.music-control-button {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin: 20px auto;
+    display: block;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.music-control-button:hover {
+    background-color: #a4ce68;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+}
+
+.music-control-button.paused {
+    background-color: #e74c3c;
+}
+
+.music-control-button.paused:hover {
+    background-color: #e96b5b;
+}
+
+.recipient-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.recipient-actions .button {
+    width: auto;
+    padding: 15px 30px;
+    margin: 0;
+    flex-grow: 1;
+    max-width: 250px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: auto;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2.8em;
+    }
+
+    main {
+        padding: 15px;
+    }
+
+    .view {
+        padding: 25px;
+        margin: 15px;
+        border-radius: 10px;
+    }
+
+    h2 {
+        font-size: 2em;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+        padding: 12px;
+        font-size: 1em;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .radio-group label {
+        width: calc(100% - 4px);
+        text-align: center;
+        padding: 10px 15px;
+        font-size: 0.95em;
+    }
+
+    .button {
+        padding: 15px;
+        font-size: 1.05em;
+    }
+
+    #recipient-title {
+        font-size: 2.5em;
+        margin-bottom: 25px;
+    }
+
+    #displayed-recipient-photo {
+        max-height: 200px;
+    }
+
+    .wish-message {
+        font-size: 1.2em;
+        padding: 25px;
+        min-height: 180px;
+        margin-bottom: 25px;
+    }
+
+    .recipient-actions {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .recipient-actions .button {
+        width: 100%;
+        max-width: none;
+    }
+
+    .music-control-button {
+        font-size: 1em;
+        padding: 12px 20px;
+    }
+}
