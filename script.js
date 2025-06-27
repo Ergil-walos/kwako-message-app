@@ -1,3 +1,37 @@
+// ===========================================
+// Importations Firebase depuis CDN (pour une utilisation directe sans npm/bundler)
+// ===========================================
+// Assurez-vous que la version (ici 10.12.0) est à jour ou celle que vous souhaitez utiliser.
+// Vous pouvez trouver la dernière version sur https://firebase.google.com/docs/web/setup#available-libraries
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, doc, getDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ===========================================
+// Configuration Firebase (VOS VALEURS SPÉCIFIQUES)
+// Ces valeurs proviennent de votre console Firebase
+// ===========================================
+const firebaseConfig = {
+    apiKey: "AIzaSyD0C_7vwDA8zCXiZdQm2PLBd1grKOVvleY",
+    authDomain: "kwako-2915d.firebaseapp.com",
+    projectId: "kwako-2915d",
+    storageBucket: "kwako-2915d.firebasestorage.app",
+    messagingSenderId: "255153226540",
+    appId: "1:255153226540:web:b32f2925e83f76dad72289",
+    measurementId: "G-6FTVDTRFZM"
+};
+
+// ===========================================
+// Initialisation de Firebase
+// ===========================================
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+// Référence à la collection 'messages' dans votre base de données Firestore
+const messagesCollection = collection(db, "messages");
+
+
+// ===========================================
+// Votre code JavaScript principal
+// ===========================================
 document.addEventListener('DOMContentLoaded', () => {
     // Select DOM elements
     const creatorView = document.getElementById('creator-view');
@@ -30,17 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleMusicButton = document.getElementById('toggle-music-button');
 
     const downloadMessageButton = document.getElementById('download-message');
-    // Nouveau bouton spécifique pour "Créer un nouveau message" sur la page du destinataire
     const createNewMessageRecipientButton = document.getElementById('create-new-message-recipient');
-    // Le bouton existant pour "Créer un nouveau message" sur la page du lien
     const createNewMessageLinkButton = document.getElementById('create-new-message');
 
     let base64Photo = '';
 
-    // Define the single music file path for all categories
-    const defaultMusicPath = 'audio/music.mp3'; // Path to your music.mp3 file
+    const defaultMusicPath = 'audio/music.mp3';
 
-    // Database of messages by theme with emojis
     const messages = {
         love: [
             "Tu es mon étoile, celle qui guide mes nuits et illumine mes jours. ✨",
@@ -82,16 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Router: Manages which view to display on page load
-    const handleRouting = () => {
+    const handleRouting = async () => {
         const params = new URLSearchParams(window.location.search);
-        if (params.has('n') && params.has('mode') && params.has('c')) {
-            const messageMode = atob(params.get('mode'));
-            if ((messageMode === 'surprise' && params.has('m') && params.has('t')) ||
-                (messageMode === 'custom' && params.has('msg'))) {
-                displayWish(params);
-            } else {
-                showView('creator-view');
-            }
+        if (params.has('id')) { // Vérifie si l'ID du message est présent
+            const messageId = params.get('id');
+            await displayWish(messageId); // Passe l'ID du message à displayWish
         } else {
             showView('creator-view');
         }
@@ -101,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const showView = (viewId) => {
         document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
-        // If exiting the recipient view, pause music and reset button
         if (viewId !== 'recipient-view' && !backgroundMusic.paused) {
             backgroundMusic.pause();
             backgroundMusic.currentTime = 0;
@@ -120,73 +144,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Function to display the message to the recipient
-    const displayWish = (params) => {
-        const name = atob(params.get('n'));
-        const messageMode = atob(params.get('mode'));
-        const theme = atob(params.get('c'));
-        const photoData = params.has('p') ? atob(params.get('p')) : '';
+    // Function to display the message to the recipient (MODIFIÉE POUR FIREBASE)
+    const displayWish = async (messageId) => {
+        try {
+            const docSnap = await getDoc(doc(db, "messages", messageId)); // Récupère le document
 
-        applyTheme(theme);
+            if (docSnap.exists()) {
+                const messageData = docSnap.data(); // Récupère les données du message
 
-        recipientTitle.textContent = `Pour toi, ${name}...`;
+                applyTheme(messageData.theme);
 
-        // Show/hide the photo container based on photo data
-        if (photoData) {
-            displayedRecipientPhoto.src = photoData;
-            recipientPhotoContainer.classList.remove('hidden'); // Show the container
-        } else {
-            recipientPhotoContainer.classList.add('hidden'); // Hide the container
-        }
+                recipientTitle.textContent = `Pour toi, ${messageData.name}...`;
 
-        // Clear previous messages
-        wishMessageContainer.innerHTML = '';
+                if (messageData.photo) {
+                    displayedRecipientPhoto.src = messageData.photo;
+                    recipientPhotoContainer.classList.remove('hidden');
+                } else {
+                    recipientPhotoContainer.classList.add('hidden');
+                }
 
-        let messagesToDisplay = [];
+                wishMessageContainer.innerHTML = '';
 
-        if (messageMode === 'custom') {
-            const customMessage = atob(params.get('msg'));
-            messagesToDisplay = customMessage.split('\n').filter(Boolean);
-        } else {
-            const messageType = atob(params.get('t'));
-            const messageIndexes = atob(params.get('m')).split(',');
-            const selectedMessageTypeMessages = messages[messageType] || messages.love;
-            messagesToDisplay = messageIndexes.map(index => selectedMessageTypeMessages[parseInt(index)]);
-        }
+                let messagesToDisplay = [];
 
-        // Set unique music source
-        backgroundMusic.src = defaultMusicPath;
-        backgroundMusic.load(); // Reload audio source
+                if (messageData.mode === 'custom') {
+                    messagesToDisplay = messageData.customMessage.split('\n').filter(Boolean);
+                } else {
+                    const selectedMessageTypeMessages = messages[messageData.type] || messages.love;
+                    messagesToDisplay = messageData.contentIndexes.map(index => selectedMessageTypeMessages[index]);
+                }
 
-        messagesToDisplay.forEach((msg, i) => {
-            setTimeout(() => {
-                const p = document.createElement('p');
-                p.textContent = msg;
-                // Add a class that can be animated by CSS for the typing effect
-                p.classList.add('typing-effect');
-                wishMessageContainer.appendChild(p);
+                backgroundMusic.src = defaultMusicPath;
+                backgroundMusic.load();
 
-                // When the animation ends, remove the typing class to stop cursor
-                p.addEventListener('animationend', () => {
-                    p.classList.remove('typing-effect');
+                messagesToDisplay.forEach((msg, i) => {
+                    setTimeout(() => {
+                        const p = document.createElement('p');
+                        p.textContent = msg;
+                        p.classList.add('typing-effect');
+                        wishMessageContainer.appendChild(p);
+
+                        p.addEventListener('animationend', () => {
+                            p.classList.remove('typing-effect');
+                        });
+                    }, i * 3000);
                 });
-            }, i * 3000); // 3 seconds delay for each message
-        });
 
-        showView('recipient-view');
+                showView('recipient-view');
+
+            } else {
+                console.log("Aucun message trouvé pour cet ID ou message expiré !");
+                alert("Oups ! Ce message n'existe plus ou a expiré.");
+                showView('creator-view');
+            }
+        } catch (error) {
+            console.error("Erreur lors de la récupération du message depuis Firestore:", error);
+            alert("Une erreur est survenue lors de la récupération du message.");
+            showView('creator-view');
+        }
     };
 
     // Handles recipient photo upload by the creator
-    // CORRECTION : Ajout de la logique de redimensionnement de l'image
     recipientPhotoInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Vérifier si le fichier est une image
             if (!file.type.startsWith('image/')) {
                 alert("Veuillez sélectionner un fichier image.");
                 base64Photo = '';
                 photoPreviewText.textContent = 'Aucune photo sélectionnée';
-                event.target.value = ''; // Réinitialise l'input file pour permettre une nouvelle sélection
+                event.target.value = '';
                 return;
             }
 
@@ -194,13 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    // Définir les dimensions maximales pour l'image redimensionnée
-                    const MAX_WIDTH = 500; // Largeur max en pixels
-                    const MAX_HEIGHT = 400; // Hauteur max en pixels
+                    const MAX_WIDTH = 500;
+                    const MAX_HEIGHT = 400;
                     let width = img.width;
                     let height = img.height;
 
-                    // Redimensionner si l'image dépasse les dimensions maximales
                     if (width > MAX_WIDTH || height > MAX_HEIGHT) {
                         if (width / MAX_WIDTH > height / MAX_HEIGHT) {
                             height *= MAX_WIDTH / width;
@@ -217,8 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Convertir en Base64 JPEG avec une qualité de 70% pour une bonne compression
-                    base64Photo = canvas.toDataURL('image/jpeg', 0.7); 
+                    base64Photo = canvas.toDataURL('image/jpeg', 0.7);
                     photoPreviewText.textContent = `Photo sélectionnée: ${file.name} (redimensionnée)`;
                 };
                 img.src = e.target.result;
@@ -249,8 +272,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handles form submission
-    form.addEventListener('submit', (e) => {
+    // Handles form submission (MODIFIÉE POUR FIREBASE)
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = nameInput.value.trim();
         const selectedTheme = themeSelect.value;
@@ -261,8 +284,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let encodedContent = '';
-        let encodedMessageTypeOrMode = '';
+        let messageData = {
+            name: name,
+            mode: messageMode,
+            theme: selectedTheme,
+            timestamp: new Date()
+        };
+
+        if (base64Photo) {
+            messageData.photo = base64Photo;
+        }
 
         if (messageMode === 'surprise') {
             const selectedMessageType = messageTypeSelect.value;
@@ -277,38 +308,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const randomIndex = Math.floor(Math.random() * availableMessages.length);
                 selectedMessageIndexes.add(randomIndex);
             }
-            encodedContent = btoa(Array.from(selectedMessageIndexes).join(','));
-            encodedMessageTypeOrMode = btoa(selectedMessageType);
+            messageData.type = selectedMessageType;
+            messageData.contentIndexes = Array.from(selectedMessageIndexes);
         } else { // custom message
             const customMsg = customMessageTextarea.value.trim();
             if (customMsg === "") {
                 alert("Veuillez écrire votre message personnalisé.");
                 return;
             }
-            encodedContent = btoa(customMsg);
-            encodedMessageTypeOrMode = btoa('custom');
+            messageData.customMessage = customMsg;
         }
 
-        const encodedName = btoa(name);
-        const encodedTheme = btoa(selectedTheme);
-        // base64Photo contient déjà la version redimensionnée si une photo a été sélectionnée
-        const encodedPhoto = base64Photo ? btoa(base64Photo) : ''; 
+        try {
+            // Enregistrer le message dans Firestore
+            const docRef = await addDoc(messagesCollection, messageData);
+            const messageId = docRef.id; // Récupère l'ID unique généré par Firestore
 
-        const baseURL = window.location.href.split('?')[0];
-        let link = `${baseURL}?n=${encodedName}&mode=${btoa(messageMode)}&c=${encodedTheme}&t=${encodedMessageTypeOrMode}`;
+            const baseURL = window.location.href.split('?')[0]; // Garde la base de l'URL
+            const link = `${baseURL}?id=${messageId}`; // Le nouveau lien court avec l'ID
 
-        if (messageMode === 'surprise') {
-            link += `&m=${encodedContent}`;
-        } else {
-            link += `&msg=${encodedContent}`;
+            generatedLinkInput.value = link;
+            showView('link-view');
+        } catch (error) {
+            console.error("Erreur lors de l'enregistrement du message dans Firestore:", error);
+            alert("Impossible de créer le message. Veuillez réessayer.");
         }
-
-        if (encodedPhoto) {
-            link += `&p=${encodedPhoto}`;
-        }
-
-        generatedLinkInput.value = link;
-        showView('link-view');
     });
 
     // Handles the "Copy" button
@@ -335,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handles the "Download This Message" button (html2canvas)
     downloadMessageButton.addEventListener('click', () => {
-        // Temporarily hide buttons on the recipient view for capture
         toggleMusicButton.style.display = 'none';
         downloadMessageButton.style.display = 'none';
         if (createNewMessageRecipientButton) {
@@ -346,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
             scale: 2,
             useCORS: true
         }).then(canvas => {
-            // Restore button display
             toggleMusicButton.style.display = 'block';
             downloadMessageButton.style.display = 'block';
             if (createNewMessageRecipientButton) {
@@ -361,7 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Erreur lors de la capture d'écran:", err);
             alert("Impossible de télécharger le message. Veuillez réessayer.");
 
-            // Restore button display even on error
             toggleMusicButton.style.display = 'block';
             downloadMessageButton.style.display = 'block';
             if (createNewMessageRecipientButton) {
@@ -377,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         base64Photo = '';
         photoPreviewText.textContent = 'Aucune photo sélectionnée';
         kwakoSurpriseRadio.checked = true;
-        kwakoSurpriseRadio.dispatchEvent(new Event('change')); // Trigger change to show Kwako options
+        kwakoSurpriseRadio.dispatchEvent(new Event('change'));
     });
 
     // Handles the new "Create New Message" button on the recipient view
@@ -388,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
             base64Photo = '';
             photoPreviewText.textContent = 'Aucune photo sélectionnée';
             kwakoSurpriseRadio.checked = true;
-            kwakoSurpriseRadio.dispatchEvent(new Event('change')); // Trigger change to show Kwako options
+            kwakoSurpriseRadio.dispatchEvent(new Event('change'));
         });
     }
 
@@ -396,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggleMusicButton) {
         toggleMusicButton.addEventListener('click', () => {
             if (backgroundMusic.paused) {
-                backgroundMusic.volume = 0.5; // Default volume
+                backgroundMusic.volume = 0.5;
                 backgroundMusic.play()
                     .then(() => {
                         toggleMusicButton.textContent = '⏸️ Mettre en pause';
